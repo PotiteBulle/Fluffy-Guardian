@@ -36,6 +36,14 @@ Lancez le bot avec la commande suivante
 bun run index.ts
 ```
 
+## Démarrer le bot avec Docker
+Lancez le bot avec la commande suivante
+```
+docker-compose up --build
+```
+
+
+
 ## Utilisation
 Une fois le bot démarré, il se connectera à votre serveur Discord et commencera à vérifier les utilisateurices présents dans le fichier banlist.txt. Les utilisateurices trouvés seront bannis automatiquement avec le motif "[GuardianSystem]".
 
