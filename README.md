@@ -2,7 +2,7 @@
 
 Un bot Discord basé sur Bun qui vérifie les utilisateurices contre une liste de bannissements et les bannit automatiquement avec le motif '[GuardianSystem]'. 
 
-Si les utilisateurices sont présent·es dans la liste des bannissements et sur le serveur Discord.
+Si les utilisateurices sont présent·es dans la liste des bannissements et sur le serveur Discord. Bot à usage de vérification ID via la banlist
 
 Sur la base du projet & des fichiers : [HopperWatcher](https://github.com/busybox11/hopperwatcher) de @busybox11
 
