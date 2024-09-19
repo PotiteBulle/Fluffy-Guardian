@@ -15,48 +15,37 @@ if (!BAN_LIST_FILE || !GUILD_ID || !DISCORD_TOKEN) {
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers, // Nécessaire pour l'événement GuildMemberAdd
     ],
 });
+
+let banList: Set<string> = new Set();
 
 // Fonction exécutée lorsque le client Discord est prêt
 client.once(Events.ClientReady, async () => {
     console.log(`Connecté en tant que ${client.user?.tag}`);
 
     // Charger la liste des IDs à bannir depuis le fichier
-    const banList = new Set(await loadBanList());
+    banList = new Set(await loadBanList());
 
     if (banList.size === 0) {
         console.log('La liste de bannissement est vide.');
-        return;
+    } else {
+        console.log(`Liste de bannissement chargée avec ${banList.size} ID(s).`);
     }
+});
 
-    try {
-        // Obtenir le serveur Discord avec l'ID fourni
-        const guild = await client.guilds.fetch(GUILD_ID);
-        if (!guild) {
-            console.error('Serveur non trouvé.');
-            return;
+// Écouter l'événement quand un nouveau membre rejoint le serveur
+client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
+    if (banList.has(member.id)) {
+        try {
+            await member.ban({ reason: '[GuardianSystem]' });
+            console.log(`Membre ${member.user.tag} banni automatiquement.`);
+        } catch (error) {
+            console.error(`Erreur en bannissant ${member.user.tag}: ${error}`);
         }
-
-        // Récupérer tous les membres du serveur
-        const members = await guild.members.fetch();
-
-        // Parcourir chaque membre et le bannir si son ID est dans la liste de bannissement
-        for (const member of members.values()) {
-            if (banList.has(member.id)) {
-                try {
-                    await member.ban({ reason: '[GuardianSystem]' });
-                    console.log(`Membre ${member.user.tag} banni.`);
-                } catch (error) {
-                    console.error(`Erreur en bannissant ${member.user.tag}: ${error}`);
-                }
-            }
-        }
-    } catch (error) {
-        console.error(`Erreur lors de l'accès au serveur ou aux membres : ${error}`);
+    } else {
+        console.log(`Membre ${member.user.tag} est autorisé à rester.`);
     }
 });
 
