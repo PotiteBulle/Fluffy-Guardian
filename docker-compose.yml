@@ -1,0 +1,11 @@
+version: '3'
+services:
+  discord-bot:
+    build: .
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - GUILD_ID=${GUILD_ID}
+      - BAN_LIST_FILE=${BAN_LIST_FILE}
+    volumes:
+      - .:/app
+    restart: unless-stopped
