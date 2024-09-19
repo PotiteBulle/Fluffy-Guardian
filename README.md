@@ -4,7 +4,7 @@ Un bot Discord basé sur Bun qui vérifie les utilisateurices contre une liste d
 
 Si les utilisateurices sont présent·es dans la liste des bannissements et sur le serveur Discord.
 
-Sur la base du projet & des fichiers : [HopperWatcher](https://github.com/busybox11/hopperwatcher)
+Sur la base du projet & des fichiers : [HopperWatcher](https://github.com/busybox11/hopperwatcher) de @busybox11
 
 
 ## Prérequis
