@@ -4,6 +4,7 @@ docker-compose*
 .dockerignore
 .git
 .gitignore
+bun.lockb
 README.md
 LICENSE
 .vscode
