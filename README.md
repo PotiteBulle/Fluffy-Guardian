@@ -62,3 +62,7 @@ Une fois le bot démarré, il se connectera à votre serveur Discord et commence
 `.gitignore` : Liste des fichiers à ignorer dans le contrôle de version.
 
 `.dockerignore` : Liste des fichiers à ignorer lors de la construction de l'image Docker.
+
+
+## Test & fonctionnement
+![alt text](/104515.png)
