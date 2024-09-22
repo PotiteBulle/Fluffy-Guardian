@@ -1,8 +1,8 @@
 # Fluffy-Guardian
 
-Un bot Discord basé sur Bun qui vérifie les utilisateurices contre une liste de bannissements et les bannit automatiquement avec le motif '[GuardianSystem]'. 
+Un bot Discord basé sur Bun qui vérifie les utilisateur·ice·s d'après une liste de bannissements en lien avec Hopper (pour l'exemple) et les bannit automatiquement avec le motif '[GuardianSystem]'. 
 
-Bot à usage de vérification ID via la banlist
+Bot à usage de vérification d'ID via la banlist.
 
 Sur la base du projet & des fichiers : [HopperWatcher](https://github.com/busybox11/hopperwatcher) de @busybox11
 
