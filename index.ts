@@ -1,23 +1,23 @@
 import { Client, GatewayIntentBits, Events, GuildMember } from 'discord.js';
 import * as fs from 'node:fs/promises';
-import { watch } from 'node:fs'; // Importer la fonction `watch` pour surveiller les modifications
+import { watch } from 'node:fs';
 import * as path from 'node:path';
 import * as dotenv from 'dotenv';
 
 // Charger les variables d'environnement depuis le fichier .env
 dotenv.config();
 
-// Vérifier que toutes les variables d'environnement nécessaires sont définies dès le début
+// Vérifier que toutes les variables d'environnement nécessaires sont définies
 const { BANNISSEMENTS_DIR, GUILD_ID, DISCORD_TOKEN } = process.env;
 if (!BANNISSEMENTS_DIR || !GUILD_ID || !DISCORD_TOKEN) {
     throw new Error('Les variables d\'environnement DISCORD_TOKEN, GUILD_ID et BANNISSEMENTS_DIR doivent être définies.');
 }
 
-// Créer une instance du client Discord avec les intents nécessaires pour le fonctionnement du bot
+// Créer une instance du client Discord avec les intents nécessaires
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers, // Nécessaire pour l'événement GuildMemberAdd
+        GatewayIntentBits.GuildMembers,
     ],
 });
 
@@ -56,7 +56,7 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
     console.log(`Membre ${member.user.tag} est autorisé à rester.`);
 });
 
-// Fonction pour charger toutes les listes de bannissement depuis le dossier 'bannissements/'
+// Fonction pour charger toutes les listes de bannissement depuis le dossier
 async function refreshBanListsAndBanMembers(): Promise<void> {
     try {
         const files = await fs.readdir(BANNISSEMENTS_DIR!);
@@ -66,7 +66,10 @@ async function refreshBanListsAndBanMembers(): Promise<void> {
             const filePath = path.join(BANNISSEMENTS_DIR!, file);
             const data = await fs.readFile(filePath, 'utf8');
             const ids = data.split('\n').map(id => id.trim()).filter(id => id.length > 0);
-            newBanLists.set(file, new Set(ids));
+
+            // Utiliser le nom de fichier sans l'extension comme motif de bannissement
+            const reason = path.basename(file, path.extname(file)); 
+            newBanLists.set(reason, new Set(ids));
         }
 
         // Bannir les membres du serveur qui sont dans une des listes
@@ -80,7 +83,7 @@ async function refreshBanListsAndBanMembers(): Promise<void> {
                         await member.ban({ reason: `[GuardianSystem] - ${reason}` });
                         console.log(`Membre ${member.user.tag} banni automatiquement au démarrage pour la raison : ${reason}.`);
                     } catch (error) {
-                        console.error(`Erreur en bannissant ${member.user.tag} lors du démarrage: ${error}`);
+                        console.error(`Erreur en bannissant ${member.user.tag} lors du démarrage: ${error instanceof Error ? error.message : error}`);
                     }
                 }
             }
@@ -93,7 +96,7 @@ async function refreshBanListsAndBanMembers(): Promise<void> {
     }
 }
 
-// Fonction pour surveiller les modifications dans le dossier 'bannissements/'
+// Fonction pour surveiller les modifications dans le dossier
 function watchBanListsDirectory() {
     watch(BANNISSEMENTS_DIR!, { recursive: true }, async (eventType, filename) => {
         if (eventType === 'change' && filename) {
@@ -104,4 +107,4 @@ function watchBanListsDirectory() {
 }
 
 // Connexion du client Discord avec le Bot via le Token
-client.login(DISCORD_TOKEN);
+client.login(DISCORD_TOKEN).catch(console.error);
