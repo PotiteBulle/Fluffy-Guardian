@@ -1,15 +1,16 @@
 import { Client, GatewayIntentBits, Events, GuildMember } from 'discord.js';
 import * as fs from 'node:fs/promises';
 import { watch } from 'node:fs'; // Importer la fonction `watch` pour surveiller les modifications
+import * as path from 'node:path';
 import * as dotenv from 'dotenv';
 
 // Charger les variables d'environnement depuis le fichier .env
 dotenv.config();
 
 // Vérifier que toutes les variables d'environnement nécessaires sont définies dès le début
-const { BAN_LIST_FILE, GUILD_ID, DISCORD_TOKEN } = process.env;
-if (!BAN_LIST_FILE || !GUILD_ID || !DISCORD_TOKEN) {
-    throw new Error('Les variables d\'environnement DISCORD_TOKEN, GUILD_ID et BAN_LIST_FILE doivent être définies.');
+const { BANNISSEMENTS_DIR, GUILD_ID, DISCORD_TOKEN } = process.env;
+if (!BANNISSEMENTS_DIR || !GUILD_ID || !DISCORD_TOKEN) {
+    throw new Error('Les variables d\'environnement DISCORD_TOKEN, GUILD_ID et BANNISSEMENTS_DIR doivent être définies.');
 }
 
 // Créer une instance du client Discord avec les intents nécessaires pour le fonctionnement du bot
@@ -20,73 +21,84 @@ const client = new Client({
     ],
 });
 
-// Déclaration de la liste des bans
-let banList: Set<string> = new Set();
+// Stocker les listes de bannissement
+let banLists: Map<string, Set<string>> = new Map();
 
 // Fonction exécutée lorsque le client Discord est prêt
 client.once(Events.ClientReady, async () => {
     console.log(`Connecté en tant que ${client.user?.tag}`);
     
-    // Charger la liste des IDs à bannir et bannir immédiatement les membres déjà dans le serveur
-    await refreshBanListAndBanMembers();
+    // Charger les listes de bannissement et bannir immédiatement les membres déjà dans le serveur
+    await refreshBanListsAndBanMembers();
 
-    // Surveiller les modifications du fichier banlist.txt
-    watchBanListFile();
+    // Surveiller les modifications dans le dossier de bannissement
+    watchBanListsDirectory();
 
-    console.log(`Liste de bannissement chargée avec ${banList.size} ID(s).`);
+    console.log(`Listes de bannissement chargées.`);
 });
 
 // Écouter l'événement quand un nouveau membre rejoint le serveur
 client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
     console.log(`Nouveau membre détecté : ${member.user.tag} (ID: ${member.id})`);
 
-    if (banList.has(member.id)) {
-        try {
-            await member.ban({ reason: '[GuardianSystem] - Banni automatiquement.' });
-            console.log(`Membre ${member.user.tag} banni automatiquement.`);
-        } catch (error) {
-            console.error(`Erreur en bannissant ${member.user.tag}: ${error instanceof Error ? error.message : error}`);
+    for (const [reason, ids] of banLists.entries()) {
+        if (ids.has(member.id)) {
+            try {
+                await member.ban({ reason: `[GuardianSystem] - ${reason}` });
+                console.log(`Membre ${member.user.tag} banni automatiquement pour la raison : ${reason}.`);
+                return;
+            } catch (error) {
+                console.error(`Erreur en bannissant ${member.user.tag}: ${error instanceof Error ? error.message : error}`);
+            }
         }
-    } else {
-        console.log(`Membre ${member.user.tag} est autorisé à rester.`);
     }
+
+    console.log(`Membre ${member.user.tag} est autorisé à rester.`);
 });
 
-// Fonction pour charger la liste des IDs à bannir depuis le fichier 'banlist.txt' et bannir les membres correspondants
-async function refreshBanListAndBanMembers(): Promise<void> {
+// Fonction pour charger toutes les listes de bannissement depuis le dossier 'bannissements/'
+async function refreshBanListsAndBanMembers(): Promise<void> {
     try {
-        const data = await fs.readFile(BAN_LIST_FILE!, 'utf8');
-        const ids = data.split('\n').map(id => id.trim()).filter(id => id.length > 0);
-        const newBanList = new Set(ids);
+        const files = await fs.readdir(BANNISSEMENTS_DIR!);
+        const newBanLists: Map<string, Set<string>> = new Map();
 
-        // Bannir tous les membres du serveur qui sont présents dans la banlist
+        for (const file of files) {
+            const filePath = path.join(BANNISSEMENTS_DIR!, file);
+            const data = await fs.readFile(filePath, 'utf8');
+            const ids = data.split('\n').map(id => id.trim()).filter(id => id.length > 0);
+            newBanLists.set(file, new Set(ids));
+        }
+
+        // Bannir les membres du serveur qui sont dans une des listes
         const guild = await client.guilds.fetch(GUILD_ID!);
         const members = await guild.members.fetch();
 
         for (const member of members.values()) {
-            if (newBanList.has(member.id) && !banList.has(member.id)) {
-                try {
-                    await member.ban({ reason: '[GuardianSystem] - Banni automatiquement.' }); //CHANGE THIS
-                    console.log(`Membre ${member.user.tag} banni automatiquement au démarrage.`);
-                } catch (error) {
-                    console.error(`Erreur en bannissant ${member.user.tag} lors du démarrage: ${error}`);
+            for (const [reason, ids] of newBanLists.entries()) {
+                if (ids.has(member.id) && (!banLists.get(reason)?.has(member.id))) {
+                    try {
+                        await member.ban({ reason: `[GuardianSystem] - ${reason}` });
+                        console.log(`Membre ${member.user.tag} banni automatiquement au démarrage pour la raison : ${reason}.`);
+                    } catch (error) {
+                        console.error(`Erreur en bannissant ${member.user.tag} lors du démarrage: ${error}`);
+                    }
                 }
             }
         }
 
-        banList = newBanList;
-        console.log(`Liste de bannissement mise à jour : ${banList.size} ID(s).`);
+        banLists = newBanLists;
+        console.log(`Listes de bannissement mises à jour.`);
     } catch (error) {
-        console.error(`Erreur lors de la lecture du fichier de bannissement : ${error instanceof Error ? error.message : error}`);
+        console.error(`Erreur lors de la lecture des fichiers de bannissement : ${error instanceof Error ? error.message : error}`);
     }
 }
 
-// Fonction pour surveiller les modifications du fichier 'banlist.txt'
-function watchBanListFile() {
-    watch(BAN_LIST_FILE!, async (eventType) => {
-        if (eventType === 'change') {
-            console.log('Modification détectée dans le fichier de bannissement.');
-            await refreshBanListAndBanMembers();
+// Fonction pour surveiller les modifications dans le dossier 'bannissements/'
+function watchBanListsDirectory() {
+    watch(BANNISSEMENTS_DIR!, { recursive: true }, async (eventType, filename) => {
+        if (eventType === 'change' && filename) {
+            console.log(`Modification détectée dans le fichier de bannissement : ${filename}`);
+            await refreshBanListsAndBanMembers();
         }
     });
 }
