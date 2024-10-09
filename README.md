@@ -1,6 +1,6 @@
 # Fluffy-Guardian
 
-Un bot Discord basé sur Bun qui vérifie les utilisateur·ice·s d'après une liste de bannissements en lien avec Hopper (pour l'exemple) et les bannit automatiquement avec le motif '[GuardianSystem]'. 
+Un bot Discord basé sur Bun qui vérifie les utilisateur·ice·s d'après une liste de bannissements en lien avec Hopper (pour l'exemple) et les bannit automatiquement avec plusieurs motif en fonction des l'infractions. 
 
 Bot à usage de vérification d'ID via la banlist.
 
@@ -25,7 +25,7 @@ BAN_LIST_FILE=./banlist.txt # Contient les IDs des utilisateurices Discord.
 ```
 
 ## Installer les dépendances
-Si vous n'utilisez pas Docker, vous devez avoir Bun installé. Installez les dépendances nécessaires avec Bun 
+Installez les dépendances nécessaires avec Bun 
 ```
 bun install
 ```
@@ -34,12 +34,6 @@ bun install
 Lancez le bot avec la commande suivante
 ```
 bun run index.ts
-```
-
-## Démarrer le bot avec Docker
-Lancez le bot avec la commande suivante
-```
-docker-compose up --build
 ```
 
 
