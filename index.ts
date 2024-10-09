@@ -26,13 +26,11 @@ client.once(Events.ClientReady, async () => {
     console.log(`Connecté en tant que ${client.user?.tag}`);
 
     // Charger la liste des IDs à bannir depuis le fichier
-    banList = new Set(await loadBanList());
+    await refreshBanList();
+    console.log(`Liste de bannissement chargée avec ${banList.size} ID(s).`);
 
-    if (banList.size === 0) {
-        console.log('La liste de bannissement est vide.');
-    } else {
-        console.log(`Liste de bannissement chargée avec ${banList.size} ID(s).`);
-    }
+    // Surveiller les changements dans le fichier de bannissement
+    setInterval(refreshBanList, 10000); // Vérifie toutes les 10 secondes
 });
 
 // Écouter l'événement quand un nouveau membre rejoint le serveur
@@ -50,15 +48,16 @@ client.on(Events.GuildMemberAdd, async (member: GuildMember) => {
 });
 
 // Fonction pour charger la liste des IDs à bannir depuis le fichier 'banlist.txt'
-async function loadBanList(): Promise<string[]> {
+async function refreshBanList(): Promise<void> {
     try {
         // Lire le contenu du fichier de bannissement
         const data = await fs.readFile(BAN_LIST_FILE!, 'utf8');
         // Convertir le contenu en tableau d'IDs, en filtrant les lignes vides
-        return data.split('\n').map(id => id.trim()).filter(id => id.length > 0);
+        const ids = data.split('\n').map(id => id.trim()).filter(id => id.length > 0);
+        banList = new Set(ids);
+        console.log(`Liste de bannissement mise à jour : ${banList.size} ID(s).`);
     } catch (error) {
         console.error(`Erreur lors de la lecture du fichier de bannissement : ${error}`);
-        return [];
     }
 }
 
