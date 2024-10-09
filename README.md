@@ -45,24 +45,14 @@ docker-compose up --build
 
 
 ## Utilisation
-Une fois le bot démarré, il se connectera à votre serveur Discord et commencera à vérifier les utilisateurices présents dans le fichier banlist.txt. Les utilisateurices trouvés seront bannis automatiquement avec le motif "[GuardianSystem]".
+Refonte du bot de modération pour gérer plusieurs listes de bannissement:
+
+- Ajout de la prise en charge de plusieurs fichiers de bannissement basés sur des motifs spécifiques. En fonction de l'infraction
+- Utilisation du motif de la liste comme raison lors du bannissement des membres.
+- Mise à jour de la logique de chargement et de vérification des utilisateurices bannis à partir des fichiers.
+- Implémentation de la surveillance des fichiers pour détecter les modifications et actualiser les listes de bannissement automatiquement.
 
 
-## Arborescence
-`index.ts` : Code principal du bot.
+## Licence
 
-`.env `: Fichier de configuration des variables d'environnement.
-
-`banlist.txt` : Fichier contenant les IDs des utilisateurices à bannir.
-
-`Dockerfile` : Configuration pour créer l'image Docker du bot.
-
-`docker-compose.yml` : Fichier Docker Compose pour gérer les services Docker.
-
-`.gitignore` : Liste des fichiers à ignorer dans le contrôle de version.
-
-`.dockerignore` : Liste des fichiers à ignorer lors de la construction de l'image Docker.
-
-
-## Test & fonctionnement
-![alt text](/104515.png)
+[MIT Licence](https://github.com/PotiteBulle/Fluffy-Guardian/blob/main/LICENSE)
