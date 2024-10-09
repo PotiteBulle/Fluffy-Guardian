@@ -10,8 +10,9 @@ node_modules/
 #Bot
 bun.lockb
 
-# Logs
+# Logs & Bannissements
 *.log
+bannissements/*
 
 # Build output
 dist/
