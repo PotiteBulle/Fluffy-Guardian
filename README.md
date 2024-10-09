@@ -41,7 +41,7 @@ bun run index.ts
 ## Utilisation
 Refonte du bot de modération pour gérer plusieurs listes de bannissement:
 
-- Ajout de la prise en charge de plusieurs fichiers de bannissement basés sur des motifs spécifiques. En fonction de l'infraction
+- Ajout de la prise en charge de plusieurs fichiers de bannissement basés sur des motifs spécifiques.
 - Utilisation du motif de la liste comme raison lors du bannissement des membres.
 - Mise à jour de la logique de chargement et de vérification des utilisateurices bannis à partir des fichiers.
 - Implémentation de la surveillance des fichiers pour détecter les modifications et actualiser les listes de bannissement automatiquement.
